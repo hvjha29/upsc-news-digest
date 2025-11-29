@@ -7,6 +7,12 @@ calls the (stubbed) embedder, produces a tiny summary, and writes an HTML report
 
 from __future__ import annotations
 
+import warnings
+
+# Suppress harmless LibreSSL warning on macOS (urllib3 v2 + LibreSSL compatibility)
+# See: https://github.com/urllib3/urllib3/issues/3020
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL")
+
 import argparse
 import logging
 from dataclasses import dataclass
