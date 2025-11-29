@@ -57,9 +57,9 @@ def run_pipeline(url: str) -> Result:
     logger.debug("Cleaned length: %d", len(cleaned))
 
     # 3) embedding (stubbed)
-    # expecting embed_text to take a list[str] and return a list of vectors
-    vectors = embed_text([cleaned[:2000]])
-    emb_len = len(vectors[0]) if vectors and vectors[0] is not None else 0
+    # embed_text returns numpy array; get the shape
+    vectors = embed_text(cleaned[:2000])
+    emb_len = vectors.shape[0] if hasattr(vectors, 'shape') else len(vectors)
     logger.info("Embedding vector length: %d", emb_len)
 
     # 4) summary (placeholder — swap in real summarizer)
@@ -106,11 +106,16 @@ def orchestrator(
     logger.info("Created %d chunks (approx).", len(chunks))
 
     # Embed all chunks (may be slow for many chunks)
+    # embed_texts returns numpy array; convert to list for Chroma
     try:
-        embeddings = embed_texts(chunks)
+        embeddings_np = embed_texts(chunks)
+        embeddings = embeddings_np.tolist() if hasattr(embeddings_np, 'tolist') else embeddings_np
     except Exception:
         # fallback: embed slices one-by-one
-        embeddings = [embed_text(c) for c in chunks]
+        embeddings = []
+        for c in chunks:
+            emb = embed_text(c)
+            embeddings.append(emb.tolist() if hasattr(emb, 'tolist') else emb)
 
     # Index into Chroma (best-effort)
     indexed = False
