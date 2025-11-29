@@ -145,3 +145,9 @@ websockets==15.0.1
 wrapt==2.0.1
 zipp==3.23.0
 lxml-html-clean==0.4.3
+openai
+chromadb
+scikit-learn
+nltk
+python-dotenv
+tqdm

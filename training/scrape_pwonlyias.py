@@ -167,52 +167,44 @@ def parse_block(block_text):
 def parse_article_text(lines):
     """
     Given flattened lines from article, find sequences containing 'Que.' and parse them.
-    Also attempt to detect GS Paper headings preceding questions.
-    Falls back to auto-detecting paper transitions based on question count (~25-30 per paper).
+    Track which GS Paper each question belongs to based on explicit "GS Paper N" markers.
     """
     rows = []
     idx = 0
-    current_paper = None
-    question_count = 0  # track question count per paper to detect transitions
-    questions_per_paper = 25  # heuristic: GS papers typically have 25-30 questions
+    current_paper = ""
     
-    # possible paper heading patterns
-    paper_re = re.compile(r'GS\s*(?:Paper)?\s*(?:I{1,4}|IV|V|1|2|3|4)', flags=re.IGNORECASE)
-    # More aggressive: also match standalone paper like "Paper I" or "I." 
-    paper_re_alt = re.compile(r'(?:^|\b)(?:Paper|[Pp]aper)\s+(?:I{1,4}|IV|V|1|2|3|4)(?:\s|$|\.)', flags=re.IGNORECASE)
-    
-    paper_order = ["GS Paper I", "GS Paper II", "GS Paper III", "GS Paper IV"]
-    paper_idx = 0
-    current_paper = paper_order[paper_idx] if paper_idx < len(paper_order) else None
+    # Pattern to match "GS Paper 1", "GS Paper 2", etc. (used on pwonlyias.com)
+    # Also matches "GS Paper I", "GS Paper II", etc. for other sites
+    # Use word boundary \b or lookahead to avoid matching "GS Paper 2013"
+    paper_re = re.compile(r'GS\s+Paper\s+([1-4]|I{1,3}|IV)(?:\s|$|\.)', flags=re.IGNORECASE)
     
     while idx < len(lines):
         ln = lines[idx].strip()
         
-        # detect paper heading — look for explicit GS Paper or similar
+        # Check if this line contains a paper marker like "GS Paper 1"
         paper_match = paper_re.search(ln)
-        if not paper_match:
-            paper_match = paper_re_alt.search(ln)
-        
         if paper_match:
-            # extract roman numeral or number and normalize
-            paper_str = paper_match.group(0).upper()
-            # normalize to "GS Paper I/II/III/IV" format
-            if "1" in paper_str or (paper_str[-1] == "I" and "II" not in paper_str and "III" not in paper_str and "IV" not in paper_str):
+            paper_num_str = paper_match.group(1).upper()
+            # Normalize to "GS Paper I/II/III/IV"
+            if paper_num_str == "1":
                 current_paper = "GS Paper I"
-                paper_idx = 0
-            elif "2" in paper_str or "II" in paper_str:
+            elif paper_num_str == "2":
                 current_paper = "GS Paper II"
-                paper_idx = 1
-            elif "3" in paper_str or "III" in paper_str:
+            elif paper_num_str == "3":
                 current_paper = "GS Paper III"
-                paper_idx = 2
-            elif "4" in paper_str or "IV" in paper_str:
+            elif paper_num_str == "4":
                 current_paper = "GS Paper IV"
-                paper_idx = 3
+            elif paper_num_str == "I":
+                current_paper = "GS Paper I"
+            elif paper_num_str == "II":
+                current_paper = "GS Paper II"
+            elif paper_num_str == "III":
+                current_paper = "GS Paper III"
+            elif paper_num_str == "IV":
+                current_paper = "GS Paper IV"
             else:
-                current_paper = "GS Paper " + paper_str.replace("PAPER", "").replace("GS", "").strip()
+                current_paper = f"GS Paper {paper_num_str}"
             
-            question_count = 0  # reset count for new paper
             idx += 1
             continue
 
@@ -220,28 +212,29 @@ def parse_article_text(lines):
         if re.match(r'^(?:Que\.|Ques\.|Q\.)\s*\d+', ln, flags=re.IGNORECASE):
             block, next_idx = join_block_from_lines(lines, idx)
             parsed = parse_block(block)
-            parsed["paper"] = current_paper or ""
+            parsed["paper"] = current_paper
             rows.append(parsed)
-            question_count += 1
             
-            # Heuristic: auto-detect paper transitions based on question count
-            # If we've reached ~25-30 questions without seeing an explicit paper marker, assume we've moved to next paper
-            if question_count >= questions_per_paper and question_count <= questions_per_paper + 5:
-                # look ahead for paper marker in next few lines
-                found_explicit_paper = False
-                for peek_idx in range(next_idx, min(next_idx + 5, len(lines))):
-                    peek_ln = lines[peek_idx].strip()
-                    if paper_re.search(peek_ln) or paper_re_alt.search(peek_ln):
-                        found_explicit_paper = True
-                        break
-                
-                # if no explicit paper found, auto-advance to next paper
-                if not found_explicit_paper and paper_idx + 1 < len(paper_order):
-                    paper_idx += 1
-                    current_paper = paper_order[paper_idx]
-                    question_count = 0
-            
+            # Move to next_idx, but check for paper markers in between
             idx = next_idx
+            # Backtrack to check for paper markers that might be between current question and next question
+            # This handles the case where paper markers appear after "Show Answer" lines
+            if idx > 0:
+                for check_idx in range(idx - 3, idx):
+                    if check_idx >= 0 and check_idx < len(lines):
+                        check_ln = lines[check_idx].strip()
+                        check_match = paper_re.search(check_ln)
+                        if check_match:
+                            # Found a paper marker - process it
+                            paper_num_str = check_match.group(1).upper()
+                            if paper_num_str == "1":
+                                current_paper = "GS Paper I"
+                            elif paper_num_str == "2":
+                                current_paper = "GS Paper II"
+                            elif paper_num_str == "3":
+                                current_paper = "GS Paper III"
+                            elif paper_num_str == "4":
+                                current_paper = "GS Paper IV"
             continue
 
         # Sometimes questions are numbered inline like "Que.1" embedded; look for 'Que.' anywhere
@@ -263,21 +256,14 @@ def parse_article_text(lines):
                     i += 1
             for block in combined:
                 parsed = parse_block(block)
-                parsed["paper"] = current_paper or ""
+                parsed["paper"] = current_paper
                 rows.append(parsed)
-                question_count += 1
-                
-                # same auto-advance heuristic
-                if question_count >= questions_per_paper and question_count <= questions_per_paper + 5:
-                    if paper_idx + 1 < len(paper_order):
-                        paper_idx += 1
-                        current_paper = paper_order[paper_idx]
-                        question_count = 0
             
             idx += 1
             continue
 
         idx += 1
+    
     return rows
 
 def join_block_from_lines(lines, start_idx):

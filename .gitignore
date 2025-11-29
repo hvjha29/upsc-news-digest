@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+venv.bak/
+*.sqlite3
+
+# Env files
+.env
+.env.*
+
+# IDE stuff
+.vscode/
+.idea/
+
+# Data
+data/
+outputs/
+*.db
+*.log
+
+# Mac
+.DS_Store
+
+# pyenv
+.python-version
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Node (if you add frontend later)
+node_modules/
