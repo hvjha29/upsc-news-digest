@@ -28,6 +28,7 @@ from utils.output_writer import write_html_report
 from index.chroma_client import get_client, get_or_create_collection
 from utils.rag.summarizer import is_relevant_article, call_openai_summarizer
 import uuid
+from datetime import datetime
 
 
 # ---- logging ----
@@ -158,6 +159,57 @@ def orchestrator(
         summary = result.summary_text
 
     return result, summary, indexed
+
+
+def process_and_index(url: str, summaries_collection: str = "summaries") -> str:
+    """Run orchestrator for a single URL and persist a summary document into Chroma.
+
+    Returns the summary document id inserted into the `summaries_collection`.
+    """
+    result, summary, _indexed = orchestrator(url)
+
+    # Ensure summary is a string
+    if not isinstance(summary, str):
+        try:
+            import json
+
+            summary_text = json.dumps(summary, ensure_ascii=False)
+        except Exception:
+            summary_text = str(summary)
+    else:
+        summary_text = summary
+
+    # Prepare metadata
+    now = datetime.utcnow()
+    meta = {
+        "title": result.title,
+        "url": result.meta.get("url"),
+        "timestamp": now.isoformat(),
+    }
+
+    # Embed the summary for retrieval (best-effort)
+    try:
+        emb = embed_text(summary_text)
+        emb_list = emb.tolist() if hasattr(emb, "tolist") else emb
+    except Exception:
+        emb_list = None
+
+    # Persist into Chroma
+    client = get_client()
+    col = get_or_create_collection(client, summaries_collection)
+
+    doc_id = str(uuid.uuid4())
+    try:
+        if emb_list is not None:
+            col.add(ids=[doc_id], metadatas=[meta], documents=[summary_text], embeddings=[emb_list])
+        else:
+            col.add(ids=[doc_id], metadatas=[meta], documents=[summary_text])
+        logger.info("Saved summary to collection '%s' as id=%s", summaries_collection, doc_id)
+    except Exception as exc:
+        logger.exception("Failed to save summary into Chroma: %s", exc)
+        raise
+
+    return doc_id
 
 
 # ---- CLI / runner ----
