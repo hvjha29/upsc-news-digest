@@ -18,7 +18,6 @@ venv.bak/
 .idea/
 
 # Data
-data/
 outputs/
 *.db
 *.log
