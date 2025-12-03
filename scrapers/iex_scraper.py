@@ -43,8 +43,9 @@ CSV_WRITE_INTERVAL = 50   # write partial CSV every N articles
 MAX_RETRIES = 3   # maximum number of retries for failed requests
 REQUEST_TIMEOUT = 20  # timeout for requests in seconds
 
-# Regex to identify probable article links (Indian Express Explained articles have /article/explained/... in URL)
-ARTICLE_RE = re.compile(r"https?://[^/]+/article/explained/.+")  # absolute links
+# Regex to identify probable article links (Indian Express Explained articles have /article/explained/ or subcategories... in URL)
+ARTICLE_RE = re.compile(r"https?://[^/]+/article/explained/.+")  # absolute links for main explained articles
+SUBCATEGORY_ARTICLE_RE = re.compile(r"https?://[^/]+/article/explained/[^/]+/.+")  # articles in explained subcategories
 REL_ARTICLE_RE = re.compile(r"/article/explained/.+")           # relative links
 
 # Global variable to track if shutdown was requested
@@ -83,7 +84,7 @@ def parse_section_page(html, base_url):
     # Collect every <a href> that looks like an article permalink using regex heuristics.
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
-        if ARTICLE_RE.match(href):
+        if ARTICLE_RE.match(href) or SUBCATEGORY_ARTICLE_RE.match(href):
             links.add(href)
         elif REL_ARTICLE_RE.match(href):
             links.add(urljoin(base_url, href))
