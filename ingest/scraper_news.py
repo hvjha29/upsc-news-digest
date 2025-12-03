@@ -17,7 +17,7 @@ def fetch_article(url: str) -> Tuple[str, dict]:
 
 if __name__ == "__main__":
     # quick test
-    url = "https://indianexpress.com/article/explained/explained-economics/c-grade-imf-valuation-india-national-account-statistics-10392483"
+    url = "https://indianexpress.com/article/explained/"
     t, m = fetch_article(url)
     print(m)
     print(t[:400])
