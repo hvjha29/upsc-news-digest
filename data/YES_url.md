@@ -1,0 +1,10 @@
+https://www.thehindu.com/sci-tech/health/
+https://www.thehindu.com/sci-tech/science/
+https://www.thehindu.com/sci-tech/technology/
+https://www.thehindu.com/sci-tech/energy-and-environment/
+https://www.thehindu.com/sci-tech/agriculture/
+https://www.thehindu.com/business/Economy/
+https://www.thehindu.com/business/budget/
+https://www.thehindu.com/business/agri-business/
+https://www.thehindu.com/opinion/editorial/
+https://www.thehindu.com/opinion/lead/

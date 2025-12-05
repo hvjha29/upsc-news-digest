@@ -300,7 +300,7 @@ def scrape(max_pages=DEFAULT_MAX_PAGES, resume_from_page=1):
             article_data = {
                 "id": article_id,
                 "year": year,
-                "paper": "Indian Express - Explained",
+                "paper": "IEXP",
                 "question_no": article_id,  # question_no == id (change if you want per-year numbering)
                 "title": art["title"],
                 "word_limit": "",           # word_limit (not applicable for news)

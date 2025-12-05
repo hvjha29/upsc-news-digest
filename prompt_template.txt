@@ -1,0 +1,23 @@
+Classify the news text as YES if it is relevant for UPSC CSE preparation 
+(GS1–GS3, Polity, Governance, Economy, IR, Social Issues, S&T, Environment).
+
+Mark YES if the text relates to:
+• Government policies, laws, schemes, regulations, reforms, governance issues
+• Constitutional matters, Supreme Court/High Court judgments, rights, legal doctrines
+• Public administration, bureaucracy, IAS/IPS roles, governance case studies
+• Economy: budgets, economic policies, RBI/NITI reports, inflation/unemployment trends, GDP, taxation, trade, macroeconomic concepts
+• International relations: India's relations, treaties, geopolitics affecting India, multilateral institutions (UN, IMF, WTO), global governance
+• Science & Tech or Environment with policy relevance: innovations, conservation, climate, energy, digital governance
+
+Mark NO if text is about:
+• Local city/state news with no national policy relevance
+• Crimes, accidents, lifestyle, entertainment, religion, astrology, sports
+• Day-to-day political fights, election gossip, party statements, opinion polls
+• Stock market movements, FPI flows, rupee fluctuations, company-specific business news
+• International news unrelated to India’s interests
+• Tech/social media updates (WhatsApp, Instagram, gadgets), product launches
+
+Output strictly: YES or NO.
+
+Text: {text}
+Answer:
