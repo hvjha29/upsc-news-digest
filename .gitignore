@@ -21,6 +21,8 @@ venv.bak/
 outputs/
 *.db
 *.log
+logs/
+offload/
 
 # Mac
 .DS_Store
