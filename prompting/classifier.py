@@ -3,17 +3,18 @@ UPSC Relevance Classifier using LLM API.
 Classifies news articles as YES/NO based on UPSC CSE relevance.
 """
 
-import os
 import time
 import logging
 from typing import Optional, Tuple
 from pathlib import Path
-from openai import OpenAI
 
-try:
-    from .config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
-except ImportError:  # allows running as a standalone script
-    from config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
+# Allow running as a standalone script: `python prompting/classifier.py`
+if __package__ in (None, ""):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from openai import OpenAI
+from prompting.config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
 
 logging.basicConfig(
     level=logging.INFO,
