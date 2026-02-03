@@ -12,9 +12,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict
 
-from rss_parser import parse_rss_feed, get_feed_titles_only, Article
-from classifier import UPSCClassifier, find_working_model
-from config import RSS_FEEDS, OUTPUT_DIR, DATA_DIR, REQUEST_DELAY, DEFAULT_MODEL
+try:
+    from .rss_parser import parse_rss_feed, get_feed_titles_only, Article
+    from .classifier import UPSCClassifier, find_working_model
+    from .config import RSS_FEEDS, OUTPUT_DIR, DATA_DIR, REQUEST_DELAY, DEFAULT_MODEL
+except ImportError:  # allows running as a standalone script
+    from rss_parser import parse_rss_feed, get_feed_titles_only, Article
+    from classifier import UPSCClassifier, find_working_model
+    from config import RSS_FEEDS, OUTPUT_DIR, DATA_DIR, REQUEST_DELAY, DEFAULT_MODEL
 
 logging.basicConfig(
     level=logging.INFO,

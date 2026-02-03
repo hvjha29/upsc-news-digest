@@ -4,15 +4,19 @@ Processes all scraped articles and saves YES articles and summaries to separate 
 """
 
 import json
-import os
-import sys
 from pathlib import Path
 from datetime import datetime
-sys.path.insert(0, str(Path(__file__).parent / 'prompting'))
 
-from newspaper_scraper import Article
-from classifier import UPSCClassifier
-from summarizer import UPSCSummarizer
+OUTPUT_DIR = Path(__file__).parent / "output"
+
+try:
+    from .newspaper_scraper import Article
+    from .classifier import UPSCClassifier
+    from .summarizer import UPSCSummarizer
+except ImportError:  # allows running as a standalone script
+    from newspaper_scraper import Article
+    from classifier import UPSCClassifier
+    from summarizer import UPSCSummarizer
 import time
 import logging
 
@@ -24,7 +28,7 @@ def load_articles_from_json():
     articles = []
 
     # Load IE articles
-    ie_file = Path('prompting/output/ie_articles_list.json')
+    ie_file = OUTPUT_DIR / "ie_articles_list.json"
     if ie_file.exists():
         with open(ie_file, 'r', encoding='utf-8') as f:
             ie_data = json.load(f)
@@ -38,7 +42,7 @@ def load_articles_from_json():
         logger.info(f'Loaded {len(ie_data["articles"])} IE articles')
 
     # Load Hindu articles
-    hindu_file = Path('prompting/output/hindu_articles_list.json')
+    hindu_file = OUTPUT_DIR / "hindu_articles_list.json"
     if hindu_file.exists():
         with open(hindu_file, 'r', encoding='utf-8') as f:
             hindu_data = json.load(f)
@@ -95,7 +99,7 @@ def main():
 
     # Save YES article titles
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    yes_titles_file = Path(f'prompting/output/yes_article_titles_{timestamp}.txt')
+    yes_titles_file = OUTPUT_DIR / f"yes_article_titles_{timestamp}.txt"
     with open(yes_titles_file, 'w', encoding='utf-8') as f:
         f.write('UPSC-RELEVANT ARTICLE TITLES\n')
         f.write('=' * 50 + '\n\n')
@@ -124,7 +128,7 @@ def main():
         time.sleep(1)
 
     # Save summaries
-    summaries_file = Path(f'prompting/output/yes_article_summaries_{timestamp}.txt')
+    summaries_file = OUTPUT_DIR / f"yes_article_summaries_{timestamp}.txt"
     with open(summaries_file, 'w', encoding='utf-8') as f:
         f.write('UPSC-RELEVANT ARTICLE SUMMARIES\n')
         f.write('=' * 50 + '\n\n')

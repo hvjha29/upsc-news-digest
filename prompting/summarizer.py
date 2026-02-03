@@ -8,7 +8,10 @@ import logging
 from typing import Optional
 from pathlib import Path
 
-from config import API_KEY, BASE_URL
+try:
+    from .config import API_KEY, BASE_URL
+except ImportError:  # allows running as a standalone script
+    from config import API_KEY, BASE_URL
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)

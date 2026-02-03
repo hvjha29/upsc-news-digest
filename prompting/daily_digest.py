@@ -14,9 +14,14 @@ import time
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from newspaper_scraper import scrape_all_newspapers, IndianExpressScraper, TheHinduScraper, Article
-from classifier import UPSCClassifier
-from summarizer import UPSCSummarizer, format_for_telegram
+try:
+    from .newspaper_scraper import scrape_all_newspapers, IndianExpressScraper, TheHinduScraper, Article
+    from .classifier import UPSCClassifier
+    from .summarizer import UPSCSummarizer, format_for_telegram
+except ImportError:  # allows running as a standalone script
+    from newspaper_scraper import scrape_all_newspapers, IndianExpressScraper, TheHinduScraper, Article
+    from classifier import UPSCClassifier
+    from summarizer import UPSCSummarizer, format_for_telegram
 
 logging.basicConfig(
     level=logging.INFO,

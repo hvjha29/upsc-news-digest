@@ -10,7 +10,10 @@ from typing import Optional, Tuple
 from pathlib import Path
 from openai import OpenAI
 
-from config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
+try:
+    from .config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
+except ImportError:  # allows running as a standalone script
+    from config import API_KEY, BASE_URL, DEFAULT_MODEL, AVAILABLE_MODELS, MAX_TEXT_LENGTH
 
 logging.basicConfig(
     level=logging.INFO,

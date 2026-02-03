@@ -2,7 +2,7 @@ name: Daily UPSC Digest
 
 on:
   schedule:
-    - cron: '30 1 * * *'  # runs daily at 01:30 UTC (7:00 AM IST)
+    - cron: '30 6 * * *'  # runs daily at 06:30 UTC (12:00 PM IST)
   workflow_dispatch:
 
 jobs:
