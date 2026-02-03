@@ -22,10 +22,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+
       - name: Run daily digest pipeline
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL: ${{ secrets.DEEPSEEK_BASE_URL }}
         run: |
           python delivery/send_daily_digest.py --full
