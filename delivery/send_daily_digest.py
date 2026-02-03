@@ -83,14 +83,21 @@ def classify_articles(articles):
     for i, article in enumerate(articles, 1):
         if i % 50 == 0:
             logger.info(f"Classified {i}/{len(articles)} articles")
-        
+
         try:
-            result = classifier.classify(article.get('title', ''), article.get('content', ''))
+            if hasattr(article, "get_text_for_classification"):
+                text = article.get_text_for_classification()
+            elif isinstance(article, dict):
+                text = f"Title: {article.get('title', '')}\nSummary: {article.get('summary', '')}\nContent: {article.get('content', '')[:1500]}"
+            else:
+                text = str(article)
+
+            result = classifier.classify(text)
             if result and result.get('classification') == 'YES':
                 yes_articles.append(article)
         except Exception as e:
             logger.error(f"Error classifying article: {e}")
-        
+
         time.sleep(0.5)  # Rate limiting
     
     return yes_articles
@@ -104,31 +111,35 @@ def generate_summaries(articles):
     summaries = []
     
     for i, article in enumerate(articles, 1):
-        logger.info(f"Summarizing {i}/{len(articles)}: {article.get('title', '')[:50]}...")
-        
-        content = article.get('content', '')
+        title = article.title if hasattr(article, "title") else article.get('title', '')
+        content = article.content if hasattr(article, "content") else article.get('content', '')
+        source = article.source if hasattr(article, "source") else article.get('source', '')
+        section = article.section if hasattr(article, "section") else article.get('section', '')
+        url = article.link if hasattr(article, "link") else article.get('url', '')
+
+        logger.info(f"Summarizing {i}/{len(articles)}: {title[:50]}...")
+
         if len(content) < 200:
-            logger.warning(f"Content too short for: {article.get('title', '')}")
+            logger.warning(f"Content too short for: {title}")
             continue
-        
+
         try:
-            summary = summarizer.summarize(
-                article.get('title', ''),
-                content,
-                article.get('source', ''),
-                article.get('section', '')
-            )
+            # Prefer summarizer helper for Article objects
+            if hasattr(article, "__dict__") and hasattr(summarizer, "summarize_article") and hasattr(article, "title"):
+                summary = summarizer.summarize_article(article)
+            else:
+                summary = summarizer.summarize(title, content)
             if summary:
                 summaries.append({
-                    'title': article.get('title', ''),
-                    'url': article.get('url', ''),
-                    'source': article.get('source', ''),
-                    'section': article.get('section', ''),
+                    'title': title,
+                    'url': url,
+                    'source': source,
+                    'section': section,
                     'summary': summary
                 })
         except Exception as e:
             logger.error(f"Error summarizing article: {e}")
-        
+
         time.sleep(1)  # Rate limiting
     
     return summaries
@@ -147,9 +158,13 @@ def save_results(yes_articles, summaries):
         f.write("UPSC-RELEVANT ARTICLE TITLES\n")
         f.write("=" * 50 + "\n\n")
         for i, article in enumerate(yes_articles, 1):
-            f.write(f"{i}. {article.get('title', '')}\n")
-            f.write(f"   Source: {article.get('source', '')} | Section: {article.get('section', '')}\n")
-            f.write(f"   URL: {article.get('url', '')}\n\n")
+            title = article.title if hasattr(article, "title") else article.get('title', '')
+            source = article.source if hasattr(article, "source") else article.get('source', '')
+            section = article.section if hasattr(article, "section") else article.get('section', '')
+            url = article.link if hasattr(article, "link") else article.get('url', '')
+            f.write(f"{i}. {title}\n")
+            f.write(f"   Source: {source} | Section: {section}\n")
+            f.write(f"   URL: {url}\n\n")
     
     logger.info(f"Saved titles to: {titles_file}")
     
