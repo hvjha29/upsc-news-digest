@@ -32,7 +32,7 @@ class UPSCClassifier:
         
     def _load_prompt_template(self) -> str:
         """Load the prompt template from file."""
-        template_path = Path(__file__).parent / "prompt_template.txt"
+        template_path = Path(__file__).parent / "content_auditor_prompt.txt"
         with open(template_path, 'r') as f:
             return f.read()
     

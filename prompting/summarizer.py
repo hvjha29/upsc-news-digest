@@ -64,7 +64,7 @@ Article Title: {title}
 Article Content:
 {content[:4000]}
 
-Please create a UPSC Mains-Ready Flashcard for this article.
+Create a UPSC Mains-Ready Flashcard for this article.
 """
         
         try:
